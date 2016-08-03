@@ -1,0 +1,79 @@
+<?php
+/**
+ * Implements hook_disable().
+ * Disable default views when module is disabled
+ *
+ * @ingroup legume_qtl
+ */
+function legume_stock_disable() {
+  // Disable all default views provided by this module
+}
+
+/**
+ * Implements hook_requirements().
+ *
+ * @ingroup legume_qtl
+ */
+function legume_stock_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    if (!$GLOBALS["chado_is_installed"]) {
+      $requirements ['legume_qtl'] = array(
+          'title' => "legume_qtl",
+          'value' => "ERROR: Chado must be installed before this module can be enabled",
+          'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function legume_stock_install() {
+  echo "<pre>";var_dump($views);echo "</pre>";
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function legume_stock_uninstall() {
+}
+
+
+function legume_stock_make_tables() {
+/*stock_eimage schema array
+  array (
+   'table' => 'stock_eimage',
+   'fields' => array(
+     'stock_eimage_id' => array(
+       'type' => 'serial',
+       'not null' => TRUE,
+     ),
+     'stock_id' => array(
+       'type' => 'int',
+       'not null' => TRUE,
+     ),
+      'eimage_id' => array(
+       'type' => 'int',
+       'not null' => TRUE,
+     ),
+   ),//fields
+   
+   'primary key' => array(stock_eimage_id),
+   
+   'foreign keys' => array(
+     'stock' => array(
+      'table' => 'stock',
+      'columns' => array('stock_id' => 'stock_id'),
+     ),   
+     'eimage' => array(
+      'table' => 'eimage',
+      'columns' => array('eimage_id' => 'eimage_id'),
+     ),   
+   ),//foreign keys
+  )
+*/
+}

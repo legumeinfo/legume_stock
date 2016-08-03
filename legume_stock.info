@@ -1,0 +1,12 @@
+name = Legume Stock
+description = This is a Tripal extension module for legume databases that manages stock data housed in Chado. 
+core = 7.x
+version = 7.x-2.0.1-alpha
+package = Tripal Extensions 
+configure = admin/tripal/legume/legume_stock
+
+stylesheets[all][] = theme/css/legume_stock.css
+
+dependencies[] = tripal_core
+dependencies[] = tripal_stock
+dependencies[] = tripal_views

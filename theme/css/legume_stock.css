@@ -1,0 +1,8 @@
+div.legume_image {
+  float: left;
+  padding: 8px;
+}
+img.legume_image {
+  display: block;
+  margin: 0 auto
+}

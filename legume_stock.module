@@ -1,0 +1,173 @@
+<?php
+/**
+ * @file
+ * This file contains all Drupal hooks for the module other than any
+ * node hooks and block hooks. Those go in the [module name].chado_node.inc file
+ * and [module_name].blocks.inc respectively
+ *
+ * @ingroup legume_stock
+ */
+
+require_once('includes/legume_stock.chado_node.inc');
+
+function legume_stock_theme($existing, $type, $theme, $path) {
+  $path = drupal_get_path('module', 'legume_stock');
+
+  $items = array(
+    'tripal_stock_base' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_legume_stock_base',
+      'path' => "$path/theme/templates",
+    ),
+
+  );
+
+  return $items;
+}//legume_stock_theme
+
+/**
+  * hook_form_alter
+  *
+  * Add a validator to the search form.
+  */
+function legume_stock_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'views_exposed_form' && strstr($form['#id'], 'stock')) {
+    // Set form validator
+    $form['#validate'][] = 'legume_stock_form_validate';
+    
+    // Pretty-up the species dropdown
+    // NOTE THAT THIS IS SPECIFIC TO PEANUTBASE!
+    unset($form['organism_common_name']['#options']['All']);
+    unset($form['organism_common_name']['#options']['Cultivated peanut']);
+    unset($form['organism_common_name']['#options']['Hybrid peanut']);
+    unset($form['organism_common_name']['#options']['multiple peanut species']);
+    $form['organism_common_name']['#options'] 
+        = array_merge(Array('All'                     => '- Any -',
+                            'peanut'                  =>' Cultivated peanut',
+                            'Hybrid peanut'           => 'Hybrid peanut', 
+                            'multiple peanut species' => 'Unspecified Arachis'),
+                      $form['organism_common_name']['#options']);
+    
+    // Add a mini core checkbox
+    $form['trait-MINI_CORE'] = array(
+      '#type'          => 'checkbox',
+      '#title'         => t('US Mini Core Collection'),
+      '#default_value' => 'MINI_CORE',
+    );
+  
+//drupal_set_message("FORM:\n<pre>".print_r($form, true)."</pre>");  
+    // Change default value for submit button
+    $form['submit']['#value'] = 'Search';
+  }
+
+}//legume_stock_form_alter
+
+
+function legume_stock_views_pre_render($view) {
+  if (strstr($view->name, 'stocks')) {  // Report QTL found before table
+    if (isset($view->query->pager)) {
+      $view->attachment_before = "<p><b>Found " . $view->query->pager->get_total_items() . " stocks</b></p>";
+    }
+  }
+}//legume_qtl_views_pre_render
+
+/**
+  * Form validator for search form. 
+  * Use this to trim whitespace from text fields.
+  */
+function legume_stock_form_validate($form, &$form_state) {
+#drupal_set_message("in legume_stock_form_validate()");
+#drupal_set_message("FORM STATE:\n<pre>".print_r($form_state['view']->exposed_input, true)."</pre>");
+/*
+  if (isset($form_state['values']['marker_name']))
+    $form_state['values']['marker_name'] = trim($form_state['values']['marker_name']);
+*/
+  
+}//legume_stock_form_validate
+
+
+
+/**
+  * hook_views_default_views_alter()
+  * Alter the default tripal_stock view.
+  */
+function legume_stock_views_default_views_alter(&$views) {
+drupal_set_message("<pre>".print_r($views['tripal_stock_user_stocks'], true)."</pre>");
+  $handler = $views['tripal_stock_user_stocks']->display['default']->handler;
+  
+  // Remove "uniquename from results table
+drupal_set_message("FIELDS:\n <pre>".print_r($handler->display->display_options['fields'], true)."</pre>");
+  $handler->display->display_options['fields']['uniquename']['exclude'] = 1;
+  
+//drupal_set_message("FILTERS:\n <pre>".print_r($views['tripal_stock_user_stocks']->display['default']->handler->display->display_options['filters'], true)."</pre>");
+}//legume_stock_views_default_views_alter
+
+
+/**
+  * hook_views_query_alter()
+  * Alter the search query before executing.
+  */
+function legume_stock_views_query_alter(&$view, &$query) {
+//drupal_set_message("WHERE:\n<pre>".print_r($query, true)."</pre>");
+
+//drupal_set_message("exposed input:\n<pre>" . print_r($view->exposed_input, true) . "</pre>");
+  // See if results are filtered by collection
+  $mini_core = false;
+  if (isset($view->exposed_input['trait-MINI_CORE'])
+        && $view->exposed_input['trait-MINI_CORE'] == '1') {
+     $mini_core = true;
+     
+     // Will need these joins
+     $join = new views_join();
+     $join->table      = 'stockprop';
+     $join->field      = 'stock_id';
+     $join->left_table = 'stock';
+     $join->left_field = 'stock_id';
+     $join->type       = 'left';
+     $join->extra_type = 'AND';
+     $join->definition = array(
+       'left_field' => 'stock_id',
+       'field'      => 'stock_id',
+       'handler'    => 'views_handler_join',
+       'table'      => 'stockprop',
+       'left_table' => 'stock',
+     );
+     $query->add_relationship('stockprop', $join, 'node');
+     
+     $join = new views_join();
+     $join->table      = 'cvterm';
+     $join->field      = 'cvterm_id';
+     $join->left_table = 'stockprop';
+     $join->left_field = 'type_id';
+     $join->type       = 'left';
+     $join->extra_type = 'AND';
+     $join->definition = array(
+       'left_field' => 'type_id',
+       'field'      => 'type_id',
+       'handler'    => 'views_handler_join',
+       'table'      => 'cvterm',
+       'left_table' => 'stockprop',
+     );
+     $query->add_relationship('stockprop_type', $join, 'node');
+  }
+
+  $mini_core_set = false;
+  for ($i=0; $i<count($query->where); $i++) {
+
+    // If looking for mini core, add to query
+    if ($mini_core && !$mini_core_set) {
+      $mini_core_set = true;
+      $query->where[$i]['conditions'][] = array(
+        'field'    => 'stockprop_type.name',
+        'value'    => 'MINI_CORE',
+        'operator' => '=',
+      );
+    }
+    
+    $whereclause_count++;
+  }//each where clause
+  
+//drupal_set_message("QUERY:\n<pre>".print_r($query, true)."</pre>");
+}//legume_stock_views_query_alter
+
+
