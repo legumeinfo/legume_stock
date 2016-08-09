@@ -92,11 +92,11 @@ function legume_stock_form_validate($form, &$form_state) {
   * Alter the default tripal_stock view.
   */
 function legume_stock_views_default_views_alter(&$views) {
-drupal_set_message("<pre>".print_r($views['tripal_stock_user_stocks'], true)."</pre>");
+//drupal_set_message("<pre>".print_r($views['tripal_stock_user_stocks'], true)."</pre>");
   $handler = $views['tripal_stock_user_stocks']->display['default']->handler;
   
   // Remove "uniquename from results table
-drupal_set_message("FIELDS:\n <pre>".print_r($handler->display->display_options['fields'], true)."</pre>");
+//drupal_set_message("FIELDS:\n <pre>".print_r($handler->display->display_options['fields'], true)."</pre>");
   $handler->display->display_options['fields']['uniquename']['exclude'] = 1;
   
 //drupal_set_message("FILTERS:\n <pre>".print_r($views['tripal_stock_user_stocks']->display['default']->handler->display->display_options['filters'], true)."</pre>");
