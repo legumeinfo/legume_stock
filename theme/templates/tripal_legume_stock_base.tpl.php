@@ -78,12 +78,12 @@ if ($stock->dbxref_id) {
   if ($stock->dbxref_id->db_id->name == 'GRIN') {
     // important special case
     $grin_id = $stock->dbxref_id->accession; // NOT the PI number: internal ID
-    if ($stock->type_id->name == 'accession') {
+    if ($stock->type_id->name == 'Accession') {
       $grin_accession = $stock->uniquename;
     }
     else {
       $grin_accession = (isset($props['grin_accession'])) 
-                      ? $props['grin_accession'] : 'unknown';
+                      ? $props['grin_accession'] : false;
     }
 //echo "<pre>";var_dump($stock->type_id);echo"</pre>";
     $grin_url = $stock->dbxref_id->db_id->urlprefix . $grin_id;
