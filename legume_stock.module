@@ -43,7 +43,7 @@ function legume_stock_form_alter(&$form, &$form_state, $form_id) {
     unset($form['organism_common_name']['#options']['multiple peanut species']);
     $form['organism_common_name']['#options'] 
         = array_merge(Array('All'                     => '- Any -',
-                            'peanut'                  =>' Cultivated peanut',
+                            'Cultivated peanut'                  =>' Cultivated peanut',
                             'Hybrid peanut'           => 'Hybrid peanut', 
                             'multiple peanut species' => 'Unspecified Arachis'),
                       $form['organism_common_name']['#options']);
@@ -167,7 +167,7 @@ function legume_stock_views_query_alter(&$view, &$query) {
     $whereclause_count++;
   }//each where clause
   
-//drupal_set_message("QUERY:\n<pre>".print_r($query, true)."</pre>");
+//drupal_set_message("QUERY FTER MODIFICATION:\n<pre>".print_r($query, true)."</pre>");
 }//legume_stock_views_query_alter
 
 
