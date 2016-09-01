@@ -117,6 +117,10 @@ function legume_stock_views_default_views_alter(&$views) {
 function legume_stock_views_query_alter(&$view, &$query) {
 //drupal_set_message("QUERY before:\n<pre>".print_r($query, true)."</pre>");
 
+  if ($query->base_table != 'stock') {
+    return;
+  }
+  
   // Search synonyms too
   $sql = "SELECT cvterm_id FROM {cvterm} WHERE name='alias' AND cv_id=(SELECT cv_id FROM {cv} WHERE name='germplasm')";
   if ($result = chado_query($sql, array())) {
