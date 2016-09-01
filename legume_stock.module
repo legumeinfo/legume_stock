@@ -124,7 +124,6 @@ function legume_stock_views_query_alter(&$view, &$query) {
       $synonym_id = $r->cvterm_id;
     }
   }
-//drupal_set_message("synonym_id = $synonym_id");
 
   $join = new views_join();
 	$join->table      = 'stockprop';
@@ -160,7 +159,6 @@ function legume_stock_views_query_alter(&$view, &$query) {
         $minicore_id = $r->cvterm_id;
       }
     }
-//drupal_set_message("minicore_id = $minicore_id");
     
     // Will need these joins
     $join = new views_join();
@@ -193,7 +191,8 @@ function legume_stock_views_query_alter(&$view, &$query) {
   }//mini-core selected
 
   // Only want one of each stock found
-  $query->add_groupby('synonym.value');
+  $query->set_distinct(true, true);
+
 
   // Default: order by stock name
   $query->orderby[0] = array(
