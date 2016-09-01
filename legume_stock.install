@@ -43,37 +43,3 @@ function legume_stock_uninstall() {
 }
 
 
-function legume_stock_make_tables() {
-/*stock_eimage schema array
-  array (
-   'table' => 'stock_eimage',
-   'fields' => array(
-     'stock_eimage_id' => array(
-       'type' => 'serial',
-       'not null' => TRUE,
-     ),
-     'stock_id' => array(
-       'type' => 'int',
-       'not null' => TRUE,
-     ),
-      'eimage_id' => array(
-       'type' => 'int',
-       'not null' => TRUE,
-     ),
-   ),//fields
-   
-   'primary key' => array(stock_eimage_id),
-   
-   'foreign keys' => array(
-     'stock' => array(
-      'table' => 'stock',
-      'columns' => array('stock_id' => 'stock_id'),
-     ),   
-     'eimage' => array(
-      'table' => 'eimage',
-      'columns' => array('eimage_id' => 'eimage_id'),
-     ),   
-   ),//foreign keys
-  )
-*/
-}
