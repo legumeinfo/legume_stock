@@ -49,6 +49,7 @@ function legume_stock_form_alter(&$form, &$form_state, $form_id) {
                       $form['organism_common_name']['#options']);
     
     // Add a mini core checkbox
+    // NOTE THAT THIS IS SPECIFIC TO PEANUTBASE!
     $form['trait-MINI_CORE'] = array(
       '#type'          => 'checkbox',
       '#title'         => t('US Mini Core Collection'),
@@ -64,10 +65,17 @@ function legume_stock_form_alter(&$form, &$form_state, $form_id) {
 
 
 function legume_stock_views_pre_render($view) {
+//drupal_set_message("PRE RENDER VIEW:\n<pre>".print_r($view, true)."</pre>");
   if (strstr($view->name, 'stocks')) {  // Report QTL found before table
     if (isset($view->query->pager)) {
       $view->attachment_before = "<p><b>Found " . $view->query->pager->get_total_items() . " stocks</b></p>";
     }
+  }
+  
+  $search_term = $view->exposed_raw_input['name'];
+
+  foreach ($view->result as $r) {
+//drupal_set_message("RESULT:\n<pre>".print_r($r, true)."</pre>");
   }
 }//legume_qtl_views_pre_render
 
@@ -76,8 +84,6 @@ function legume_stock_views_pre_render($view) {
   * Use this to trim whitespace from text fields.
   */
 function legume_stock_form_validate($form, &$form_state) {
-#drupal_set_message("in legume_stock_form_validate()");
-#drupal_set_message("FORM STATE:\n<pre>".print_r($form_state['view']->exposed_input, true)."</pre>");
 /*
   if (isset($form_state['values']['marker_name']))
     $form_state['values']['marker_name'] = trim($form_state['values']['marker_name']);
@@ -92,8 +98,9 @@ function legume_stock_form_validate($form, &$form_state) {
   * Alter the default tripal_stock view.
   */
 function legume_stock_views_default_views_alter(&$views) {
-//drupal_set_message("<pre>".print_r($views['tripal_stock_user_stocks'], true)."</pre>");
-  $handler = $views['tripal_stock_user_stocks']->display['default']->handler;
+//drupal_set_message("STOCK VIEW:<pre>".print_r($views['tripal_stock_user_stocks'], true)."</pre>");
+//drupal_set_message("STOCK VIEW DISPLAY:<pre>".print_r($views['tripal_stock_user_stocks']->display, true)."</pre>");
+  $handler =& $views['tripal_stock_user_stocks']->display['default']->handler;
   
   // Remove "uniquename from results table
 //drupal_set_message("FIELDS:\n <pre>".print_r($handler->display->display_options['fields'], true)."</pre>");
@@ -108,66 +115,93 @@ function legume_stock_views_default_views_alter(&$views) {
   * Alter the search query before executing.
   */
 function legume_stock_views_query_alter(&$view, &$query) {
-//drupal_set_message("WHERE:\n<pre>".print_r($query, true)."</pre>");
+//drupal_set_message("QUERY before:\n<pre>".print_r($query, true)."</pre>");
 
-//drupal_set_message("exposed input:\n<pre>" . print_r($view->exposed_input, true) . "</pre>");
+  // Search synonyms too
+  $sql = "SELECT cvterm_id FROM {cvterm} WHERE name='alias' AND cv_id=(SELECT cv_id FROM {cv} WHERE name='germplasm')";
+  if ($result = chado_query($sql, array())) {
+    foreach ($result as $r) {
+      $synonym_id = $r->cvterm_id;
+    }
+  }
+//drupal_set_message("synonym_id = $synonym_id");
+
+  $join = new views_join();
+	$join->table      = 'stockprop';
+	$join->field      = 'stock_id';
+	$join->left_table = 'stock';
+	$join->left_field = 'stock_id';
+	$join->alias      = 'synonym';
+	$join->type       = 'LEFT';
+  $join->extra      = array(
+    array('field' => 'type_id', 'value' => $synonym_id),
+  );
+	$query->add_relationship('synonym', $join, 'stockprop');
+
+  // check synonym field too
+  $query->where[0]['type'] = 'OR';
+  
+  array_push($query->where[0]['conditions'], array(
+//$query->where[0]['conditions'][0] = array(
+    'field'    => 'synonym.value', 
+    'value'    => $query->where[0]['conditions'][0]['value'],
+    'operator' => 'LIKE',
+  ));
+
   // See if results are filtered by collection
   $mini_core = false;
   if (isset($view->exposed_input['trait-MINI_CORE'])
         && $view->exposed_input['trait-MINI_CORE'] == '1') {
      $mini_core = true;
-     
-     // Will need these joins
-     $join = new views_join();
-     $join->table      = 'stockprop';
-     $join->field      = 'stock_id';
-     $join->left_table = 'stock';
-     $join->left_field = 'stock_id';
-     $join->type       = 'left';
-     $join->extra_type = 'AND';
-     $join->definition = array(
-       'left_field' => 'stock_id',
-       'field'      => 'stock_id',
-       'handler'    => 'views_handler_join',
-       'table'      => 'stockprop',
-       'left_table' => 'stock',
-     );
-     $query->add_relationship('stockprop', $join, 'node');
-     
-     $join = new views_join();
-     $join->table      = 'cvterm';
-     $join->field      = 'cvterm_id';
-     $join->left_table = 'stockprop';
-     $join->left_field = 'type_id';
-     $join->type       = 'left';
-     $join->extra_type = 'AND';
-     $join->definition = array(
-       'left_field' => 'type_id',
-       'field'      => 'type_id',
-       'handler'    => 'views_handler_join',
-       'table'      => 'cvterm',
-       'left_table' => 'stockprop',
-     );
-     $query->add_relationship('stockprop_type', $join, 'node');
-  }
 
-  $mini_core_set = false;
-  for ($i=0; $i<count($query->where); $i++) {
-
-    // If looking for mini core, add to query
-    if ($mini_core && !$mini_core_set) {
-      $mini_core_set = true;
-      $query->where[$i]['conditions'][] = array(
-        'field'    => 'stockprop_type.name',
-        'value'    => 'MINI_CORE',
-        'operator' => '=',
-      );
+    $sql = "SELECT cvterm_id FROM {cvterm} WHERE name='MINI_CORE' AND cv_id=(SELECT cv_id FROM {cv} WHERE name='GRIN_descriptors')";
+    if ($result = chado_query($sql, array())) {
+      foreach ($result as $r) {
+        $minicore_id = $r->cvterm_id;
+      }
     }
+//drupal_set_message("minicore_id = $minicore_id");
     
-    $whereclause_count++;
-  }//each where clause
+    // Will need these joins
+    $join = new views_join();
+    $join->table      = 'stockprop';
+    $join->field      = 'stock_id';
+    $join->left_table = 'stock';
+    $join->left_field = 'stock_id';
+    $join->alias      = 'minicore';
+    $join->type       = 'LEFT';
+    $join->definition = array(
+      'left_field' => 'stock_id',
+      'field'      => 'stock_id',
+      'handler'    => 'views_handler_join',
+      'table'      => 'stockprop',
+      'left_table' => 'stock',
+    );
+    $join->extra      = array(
+      array('field' => 'type_id', 'value' => $minicore_id),
+    );
+    $query->add_relationship('minicore', $join, 'stockprop');
+    
+    // Add mini-core to where clause if checked
+    $query->where[1]['conditions'][] = array(
+//$query->where[0]['conditions'][0] = array(
+      'field'    => 'minicore.value',
+      'value'    => 'yes',
+      'operator' => '=',
+    );
+//unset($query->where[0]['conditions'][1]);  
+  }//mini-core selected
+
+  // Only want one of each stock found
+  $query->add_groupby('synonym.value');
+
+  // Default: order by stock name
+  $query->orderby[0] = array(
+    'field' => 'stock_name',
+    'direction' => 'ASC',
+  );
   
-//drupal_set_message("QUERY FTER MODIFICATION:\n<pre>".print_r($query, true)."</pre>");
+//drupal_set_message("QUERY AFTER MODIFICATION:\n<pre>".print_r($query, true)."</pre>");
 }//legume_stock_views_query_alter
 
 
