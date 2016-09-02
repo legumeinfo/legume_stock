@@ -6,13 +6,20 @@ $organism = $stock->organism_id;
 
 $stock = chado_expand_var($stock, 'table', 'stockprop', $options);
 $props = array();
+$synonyms = array();
 if (isset($stock->stockprop)) {
   $properties = $stock->stockprop;
   foreach ($properties as $property){
-    $props[$property->type_id->name] = $property->value;
+    if ($property->type_id->name == 'alias') {
+      $synonyms[] = $property->value;
+    }
+    else {
+      $props[$property->type_id->name] = $property->value;
+    }
   }
 }
 //echo "<pre>";var_dump($props);echo "</pre>";
+//echo "<pre>";var_dump($synonyms);echo "</pre>";
 
 // expand the text fields
 $stock = chado_expand_var($stock, 'field', 'stock.description');
@@ -42,6 +49,16 @@ $rows[] = array(
     'width'  => 200,
   ),
   $stock->uniquename
+);
+
+// Stock Synonyms
+$rows[] = array(
+  array(
+    'data'   => 'Other Name(s)',
+    'header' => TRUE,
+    'width'  => 200,
+  ),
+  implode(', ', $synonyms),
 );
 
 /////////////
