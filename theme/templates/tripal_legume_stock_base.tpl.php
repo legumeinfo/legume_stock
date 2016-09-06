@@ -52,14 +52,16 @@ $rows[] = array(
 );
 
 // Stock Synonyms
-$rows[] = array(
-  array(
-    'data'   => 'Other Name(s)',
-    'header' => TRUE,
-    'width'  => 200,
-  ),
-  implode(', ', $synonyms),
-);
+if ($synonyms && count($synonyms)) {
+  $rows[] = array(
+    array(
+      'data'   => 'Other Name(s)',
+      'header' => TRUE,
+      'width'  => 200,
+    ),
+    implode(', ', $synonyms),
+  );
+}
 
 /////////////
 // Stock Type
@@ -139,6 +141,7 @@ if ($grin_id && $grin_url) {
 }
 
 // Show origin, if known
+/* 09/06/16 data incorrect; needs to be repaired in spreadsheet and reloaded
 if (isset($props['origin'])) {
   $rows[] = array(
     array(
@@ -148,6 +151,7 @@ if (isset($props['origin'])) {
     $props['origin']
   );
 }
+*/
 
 // Link to GIS map
 //TODO: do this as dbxref
