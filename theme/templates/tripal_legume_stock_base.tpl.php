@@ -73,6 +73,17 @@ $rows[] = array(
   ucwords(preg_replace('/_/', ' ', $stock->type_id->name))
 );
 
+///////////////////
+// Crop/Market Type
+$market_type = ($props['crop']) ? $props['crop'] : 'unspecified';
+$rows[] = array(
+  array(
+    'data' => 'Market type',
+    'header' => TRUE,
+  ),
+  $market_type
+);
+
 /////////////
 // Organism
 $organism = $stock->organism_id->genus ." " . $stock->organism_id->species ." (" . $stock->organism_id->common_name .")";
