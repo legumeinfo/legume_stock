@@ -152,17 +152,18 @@ if ($grin_id && $grin_url) {
 }
 
 // Show origin, if known
-/* 09/06/16 data incorrect; needs to be repaired in spreadsheet and reloaded
 if (isset($props['origin'])) {
-  $rows[] = array(
-    array(
-      'data' => 'Origin',
-      'header' => TRUE
-    ),
-    $props['origin']
-  );
+  if ($country = getCountryName($props['origin'])) {
+    $rows[] = array(
+      array(
+        'data' => 'Origin',
+        'header' => TRUE
+      ),
+      $country
+    );
+  }
 }
-*/
+
 
 // Link to GIS map
 //TODO: do this as dbxref
