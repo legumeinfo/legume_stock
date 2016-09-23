@@ -6,3 +6,12 @@ img.legume_image {
   display: block;
   margin: 0 auto
 }
+
+.legume_trait_table th {
+  background: rgba(0, 0, 0, 0.01) none repeat scroll 0 0;
+  border-bottom-style: none;
+  color: rgb(59, 59, 59);
+}
+
+.legume_trait_table {
+}
