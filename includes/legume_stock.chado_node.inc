@@ -107,3 +107,18 @@ function loadTraitData($stock) {
   
   return $traits;
 }
+
+
+function getCountryName($code) {
+  $sql = "
+    SELECT definition FROM cvterm 
+    WHERE name='$code'
+          AND cv_id=(SELECT cv_id FROM cv WHERE name='GRIN_countries')";
+  $result = chado_query($sql);
+  foreach ($result as $r) {
+    // only one result
+    return $r->definition;
+  }
+  
+  return false;
+}
