@@ -248,6 +248,83 @@ if ($stock->type_id->name == 'Mapping Population') {
   }
 }//is mapping population
 
+// Description
+if (property_exists($stock, 'description')) { 
+  $rows[] = array(
+    array('data' => 'Description',
+          'header' => TRUE,
+    ),
+    $stock->description,
+  );
+}
+
+/////// SEPARATOR /////////
+
+$rows[] = array(
+  array(
+    'data' => '',
+    'header' => TRUE,
+    'height' => 6,
+    'style' => 'background-color:white',
+  ),
+  array(
+    'data' => '',
+    'style' => 'background-color:white',
+  ),
+);
+
+/////// TRAITS SECTION /////////
+$traits = loadTraitData($stock);
+$rows[] = array(
+  array(
+    'data' => 'Traits',
+    'header' => TRUE,
+    'colspan' => 2,
+    'style' => 'background-color:#c9c9c9;color:#101010',
+  ),
+);
+
+$methods = array();
+foreach ($traits as $trait) {
+  if (!isset($methods[$trait->method])) {
+    $methods[$trait->method] = array();
+  }
+  $value = ($trait->value) ? $trait->value : $trait->cvalue;
+  $attr  = $trait->attr;
+  $methods[$trait->method][] = array(
+    'attr'  => $attr,
+    'value' => $value,
+  );
+}
+
+foreach (array_keys($methods) as $method) {
+  $trait_rows = array();
+  foreach ($methods[$method] as $trait) {
+    $trait_rows[] = array(
+      $trait['attr'],
+      $trait['value'],
+    );
+  }
+  $trait_table = array(
+    'header' => array('trait', 'value'),
+    'rows' => $trait_rows,
+    'attributes' => array(
+      'id' => 'tripal_stock-table-base',
+      'class' => 'tripal-data-table legume_trait_table'
+    ),
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+  
+  $rows[] = array(
+    array('data' => $method,
+          'header' => TRUE,
+    ),
+    theme_table($trait_table),
+  );
+}
 
 /////////////
 // allow site admins to see the stock ID
@@ -295,7 +372,3 @@ $table = array(
 // function to generate the table.
 print theme_table($table);
 
-// add in the description if there is one
-if (property_exists($stock, 'description')) { ?>
-  <div style="text-align: justify"><?php print $stock->description; ?></div> <?php  
-} 
