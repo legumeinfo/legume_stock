@@ -84,11 +84,9 @@ function legume_stock_views_pre_render($view) {
   * Use this to trim whitespace from text fields.
   */
 function legume_stock_form_validate($form, &$form_state) {
-/*
-  if (isset($form_state['values']['marker_name']))
-    $form_state['values']['marker_name'] = trim($form_state['values']['marker_name']);
-*/
-  
+  // trim whitespace from all text fields;
+  if (isset($form_state['values']['name']))
+    $form_state['values']['name'] = trim($form_state['values']['name']);
 }//legume_stock_form_validate
 
 
