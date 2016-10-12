@@ -92,12 +92,12 @@ function loadTraitData($stock) {
   $sql = "
     SELECT s.stock_id, s.name AS stock, a.definition AS attr, 
            m.definition AS method, ph.value, v.definition AS cvalue
-    FROM phenotype ph
-      INNER JOIN stock_phenotype sp ON sp.phenotype_id=ph.phenotype_id
-      INNER JOIN stock s ON s.stock_id=sp.stock_id
-      INNER JOIN cvterm a ON a.cvterm_id=ph.attr_id
-      INNER JOIN cvterm m ON m.cvterm_id=ph.assay_id
-      LEFT OUTER JOIN cvterm v ON v.cvterm_id=cvalue_id
+    FROM {phenotype} ph
+      INNER JOIN {stock_phenotype} sp ON sp.phenotype_id=ph.phenotype_id
+      INNER JOIN {stock} s ON s.stock_id=sp.stock_id
+      INNER JOIN {cvterm} a ON a.cvterm_id=ph.attr_id
+      INNER JOIN {cvterm} m ON m.cvterm_id=ph.assay_id
+      LEFT OUTER JOIN {cvterm} v ON v.cvterm_id=cvalue_id
     WHERE s.stock_id=" . $stock->stock_id . "
     ORDER BY m.definition, a.definition";
   $result = chado_query($sql);
