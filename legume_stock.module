@@ -25,6 +25,7 @@ function legume_stock_theme($existing, $type, $theme, $path) {
   return $items;
 }//legume_stock_theme
 
+
 /**
   * hook_form_alter
   *
@@ -114,48 +115,100 @@ function legume_stock_views_default_views_alter(&$views) {
   */
 function legume_stock_views_query_alter(&$view, &$query) {
 //drupal_set_message("QUERY before:\n<pre>".print_r($query, true)."</pre>");
+//drupal_set_message("EXPOSED INPUT:\n<pre>".print_r($view->exposed_input, true)."</pre>");
 
   if ($query->base_table != 'stock') {
     return;
   }
   
-  // Search synonyms too
-  $sql = "SELECT cvterm_id FROM {cvterm} WHERE name='alias' AND cv_id=(SELECT cv_id FROM {cv} WHERE name='germplasm')";
-  if ($result = chado_query($sql, array())) {
-    foreach ($result as $r) {
-      $synonym_id = $r->cvterm_id;
-    }
-  }
+  // Will be rebuilding the where clause
+  $query->where = array();
 
-  $join = new views_join();
-	$join->table      = 'stockprop';
-	$join->field      = 'stock_id';
-	$join->left_table = 'stock';
-	$join->left_field = 'stock_id';
-	$join->alias      = 'synonym';
-	$join->type       = 'LEFT';
-  $join->extra      = array(
-    array('field' => 'type_id', 'value' => $synonym_id),
-  );
-	$query->add_relationship('synonym', $join, 'stockprop');
-
-  // check synonym field too
-  $query->where[0]['type'] = 'OR';
+  // Build organism clause
+  if ($view->exposed_input['organism_common_name']
+        && $view->exposed_input['organism_common_name'] != 'All') {
+    $query->where[] = array(
+      'conditions' => array(
+        array(
+          'field'    => 'organism.common_name', 
+          'value'    => $view->exposed_input['organism_common_name'],
+          'operator' => '='),
+      ),
+      'args' => array(),
+      'type' => 'AND',
+    );
+  }//organism_common_name
   
-  array_push($query->where[0]['conditions'], array(
-//$query->where[0]['conditions'][0] = array(
-    'field'    => 'synonym.value', 
-    'value'    => $query->where[0]['conditions'][0]['value'],
-    'operator' => 'LIKE',
-  ));
+  // Build stock type clause
+  if ($view->exposed_input['type_id'] && $view->exposed_input['type_id'] != 'All') {
+    $query->where[] = array(
+      'conditions' => array(
+        array(
+          'field'    => 'stock.type_id', 
+          'value'    => $view->exposed_input['type_id'],
+          'operator' => '='),
+      ),
+      'args' => array(),
+      'type' => 'AND',
+    );
+  }//type_id
 
-  // See if results are filtered by collection
+  // build stock name clause; check stock name and synonym
+  if ($view->exposed_input['name']) {
+  
+    // Get cvterm_id for 'alias'
+    $sql = "
+      SELECT cvterm_id FROM {cvterm} 
+      WHERE name='alias' AND cv_id=(SELECT cv_id FROM {cv} WHERE name='germplasm')";
+    if ($result = chado_query($sql, array())) {
+      foreach ($result as $r) {
+        $synonym_id = $r->cvterm_id;
+      }
+    }
+
+    // Join cvterm to stock.type_id: stock.type_id
+    $join = new views_join();
+    $join->table      = 'stockprop';
+    $join->field      = 'stock_id';
+    $join->left_table = 'stock';
+    $join->left_field = 'stock_id';
+    $join->alias      = 'synonym';
+    $join->type       = 'LEFT';
+    $join->extra      = array(
+      array('field' => 'type_id', 'value' => $synonym_id),
+    );
+    $query->add_relationship('synonym', $join, 'stockprop');
+
+    $name = str_replace('_', '\\_', $view->exposed_input['name']);
+    $name = str_replace('%', '\\%', $name);
+    $query->where[] = array(
+      'conditions' => array(
+        array(
+          'field'    => 'synonym.value', 
+          'value'    => "%$name%",
+          'operator' => 'LIKE'),
+        array(
+          'field'    => 'stock.name', 
+          'value'    => "%$name%",
+          'operator' => 'LIKE'),
+      ),
+      'args' => array(),
+      'type' => 'OR',
+    );
+
+    $query->where[0]['type'] = 'OR';
+  }//name
+
+  // Filter by collection
   $mini_core = false;
   if (isset($view->exposed_input['trait-MINI_CORE'])
         && $view->exposed_input['trait-MINI_CORE'] == '1') {
-     $mini_core = true;
+    $mini_core = true;
 
-    $sql = "SELECT cvterm_id FROM {cvterm} WHERE name='MINI_CORE' AND cv_id=(SELECT cv_id FROM {cv} WHERE name='GRIN_descriptors')";
+    $sql = "
+      SELECT cvterm_id FROM {cvterm} 
+      WHERE name='MINI_CORE' AND cv_id=(SELECT cv_id FROM {cv} 
+                                        WHERE name='GRIN_descriptors')";
     if ($result = chado_query($sql, array())) {
       foreach ($result as $r) {
         $minicore_id = $r->cvterm_id;
@@ -183,13 +236,17 @@ function legume_stock_views_query_alter(&$view, &$query) {
     $query->add_relationship('minicore', $join, 'stockprop');
     
     // Add mini-core to where clause if checked
-    $query->where[1]['conditions'][] = array(
-//$query->where[0]['conditions'][0] = array(
-      'field'    => 'minicore.value',
-      'value'    => 'yes',
-      'operator' => '=',
+    $query->where[] = array(
+      'conditions' => array(
+        array(
+          'field'    => 'minicore.value',
+          'value'    => 'yes',
+          'operator' => '=',
+        ),
+      ),
+      'args' => array(),
+      'type' => 'AND',
     );
-//unset($query->where[0]['conditions'][1]);  
   }//mini-core selected
 
   // Only want one of each stock found
