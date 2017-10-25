@@ -72,8 +72,9 @@ function legume_stock_views_pre_render($view) {
       $view->attachment_before = "<p><b>Found " . $view->query->pager->get_total_items() . " stocks</b></p>";
     }
   }
-  
-  $search_term = $view->exposed_raw_input['name'];
+
+  if (isset($view->exposed_raw_input['name']))
+    $search_term = $view->exposed_raw_input['name'];
 
   foreach ($view->result as $r) {
 //drupal_set_message("RESULT:\n<pre>".print_r($r, true)."</pre>");
