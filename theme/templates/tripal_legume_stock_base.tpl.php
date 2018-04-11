@@ -285,22 +285,22 @@ $rows[] = array(
   ),
 );
 
-$methods = array();
+$studies = array();
 foreach ($traits as $trait) {
-  if (!isset($methods[$trait->method])) {
-    $methods[$trait->method] = array();
+  if (!isset($studies[$trait->study])) {
+    $studies[$trait->study] = array();
   }
   $value = ($trait->value) ? $trait->value : $trait->cvalue;
   $attr  = $trait->attr;
-  $methods[$trait->method][] = array(
+  $studies[$trait->study][] = array(
     'attr'  => $attr,
     'value' => $value,
   );
 }
 
-foreach (array_keys($methods) as $method) {
+foreach (array_keys($studies) as $study) {
   $trait_rows = array();
-  foreach ($methods[$method] as $trait) {
+  foreach ($studies[$study] as $trait) {
     $trait_rows[] = array(
       $trait['attr'],
       $trait['value'],
@@ -320,7 +320,7 @@ foreach (array_keys($methods) as $method) {
   );
   
   $rows[] = array(
-    array('data' => $method,
+    array('data' => $study,
           'header' => TRUE,
     ),
     theme_table($trait_table),

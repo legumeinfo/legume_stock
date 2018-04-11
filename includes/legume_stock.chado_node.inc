@@ -90,9 +90,11 @@ function loadMappingData($stock) {
 function loadTraitData($stock) {
   $traits = array();
   $sql = "
-    SELECT s.stock_id, s.name AS stock, a.definition AS attr, 
+    SELECT p.name AS study, s.stock_id, s.name AS stock, a.definition AS attr, 
            m.definition AS method, ph.value, v.definition AS cvalue
     FROM {phenotype} ph
+      INNER JOIN {project_phenotype} pph ON pph.phenotype_id=ph.phenotype_id
+      INNER JOIN {project} p ON p.project_id=pph.project_id
       INNER JOIN {stock_phenotype} sp ON sp.phenotype_id=ph.phenotype_id
       INNER JOIN {stock} s ON s.stock_id=sp.stock_id
       INNER JOIN {cvterm} a ON a.cvterm_id=ph.attr_id
