@@ -185,8 +185,8 @@ function legume_stock_defaultvalue_user_genes() {
   $handler->display->display_options['filters']['collections']['select_optional'] = TRUE;
 
   // Display: stock_search
-  $handler = $view->new_display('page', 'stock/search', 'page');
-  $handler->display->display_options['path'] = 'stock/search';
+  $handler = $view->new_display('page', 'search/search', 'page');
+  $handler->display->display_options['path'] = 'search/stock';
 
   return $view;
 }//legume_stock_defaultvalue_user_genes
