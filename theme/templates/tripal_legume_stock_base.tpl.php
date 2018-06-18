@@ -86,9 +86,13 @@ $rows[] = array(
 
 /////////////
 // Organism
-$organism = $stock->organism_id->genus ." " . $stock->organism_id->species ." (" . $stock->organism_id->common_name .")";
+$organism = $stock->organism_id->genus ." " . $stock->organism_id->species 
+          ." (" . $stock->organism_id->common_name .")";
 if (property_exists($stock->organism_id, 'nid')) {
-  $organism = l("<i>" . $stock->organism_id->genus . " " . $stock->organism_id->species . "</i> (" . $stock->organism_id->common_name .")", "node/".$stock->organism_id->nid, array('html' => TRUE));
+  $organism = l("<i>" . $stock->organism_id->genus . " " 
+            . $stock->organism_id->species 
+            . "</i> (" . $stock->organism_id->common_name .")", 
+            "node/".$stock->organism_id->nid, array('html' => TRUE));
 }
 $rows[] = array(
   array(
@@ -275,7 +279,7 @@ $rows[] = array(
 );
 
 /////// TRAITS SECTION /////////
-$traits = loadTraitData($stock);
+$trait_rows = loadTraitData($stock);
 $rows[] = array(
   array(
     'data' => 'Traits',
@@ -285,29 +289,52 @@ $rows[] = array(
   ),
 );
 
-$studies = array();
-foreach ($traits as $trait) {
-  if (!isset($studies[$trait->study])) {
-    $studies[$trait->study] = array();
+// Organize traits by study
+$study_data = array();
+foreach ($trait_rows as $t) {
+  $study      = $t['study'];
+  $method     = ($t['method_desc']) 
+                ? ' - ' . $t['method_desc'] 
+                : '';
+  $descriptor = $t['trait'] . $method;
+  $value      = ($t['cvalue']) 
+                ? $t['cvalue'] . ' (' . $t['cvalue_desc'] . ')'
+                : $t['value'];
+//drupal_set_message("Got value '$value' for '$trait'");
+  if (!isset($study_data[$study])) {
+    $study_data[$study] = array();
   }
-  $value = ($trait->value) ? $trait->value : $trait->cvalue;
-  $attr  = $trait->attr;
-  $studies[$trait->study][] = array(
-    'attr'  => $attr,
-    'value' => $value,
+  $study_data[$study][] = array(
+    'descriptor' => $descriptor,
+    'value'      => $value,
   );
 }
+//drupal_set_message("Studies: " . print_r($study_data, true));
 
-foreach (array_keys($studies) as $study) {
+// Show all traits for each study
+foreach (array_keys($study_data) as $study) {
+//drupal_set_message("study data for '$study' " . print_r($study_data[$study], true));
+
   $trait_rows = array();
-  foreach ($studies[$study] as $trait) {
+  foreach ($study_data[$study] as $trait) {
+//drupal_set_message("study-trait: $study, " . print_r($trait, true));
     $trait_rows[] = array(
-      $trait['attr'],
+      $trait['descriptor'],
       $trait['value'],
     );
   }
   $trait_table = array(
-    'header' => array('trait', 'value'),
+    'header' => array(
+      'trait' => array(
+        'data' => 'descriptor',
+        'width' => '20%'
+      ),
+      'value' => array(
+         'data' => 'observation',
+         'width' => '80%',
+      ),
+    ),
+    
     'rows' => $trait_rows,
     'attributes' => array(
       'id' => 'tripal_stock-table-base',
