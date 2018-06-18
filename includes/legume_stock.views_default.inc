@@ -10,21 +10,21 @@
  * @ingroup tripal_gene
  */
 function legume_stock_views_default_views() {
-print "legume_stock_views_default_views()\n";
   $views = array();
 
-  $view = legume_stock_defaultvalue_user_genes();
+  $view = legume_stock_defaultvalue_stock();
   $views[$view->name] = $view;
 
   return $views;
 }//legume_stock_views_default_views
+
 
 /**
  * Defines the gene user search default view.
  *
  * @ingroup tripal_gene
  */
-function legume_stock_defaultvalue_user_genes() {
+function legume_stock_defaultvalue_stock() {
   $view = new view();
   $view->name = 'stock_search';
   $view->description = 'Stock search View';
@@ -189,5 +189,5 @@ function legume_stock_defaultvalue_user_genes() {
   $handler->display->display_options['path'] = 'search/stock';
 
   return $view;
-}//legume_stock_defaultvalue_user_genes
+}//legume_stock_defaultvalue_stock
 
