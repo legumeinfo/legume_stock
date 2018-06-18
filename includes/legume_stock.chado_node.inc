@@ -90,21 +90,39 @@ function loadMappingData($stock) {
 function loadTraitData($stock) {
   $traits = array();
   $sql = "
-    SELECT p.name AS study, s.stock_id, s.name AS stock, a.definition AS attr, 
-           m.definition AS method, ph.value, v.definition AS cvalue
-    FROM {phenotype} ph
+    SELECT p.name AS study, s.stock_id, s.name AS stock, t.name AS trait,
+           m.name AS methodname, m.definition AS method_desc,
+           sc.name AS scalename, ph.value AS literal_value, 
+           SPLIT_PART(c.name, '|', 1) AS code_value, 
+           c.definition AS code_description
+    FROM {phenotype ph 
       INNER JOIN {project_phenotype} pph ON pph.phenotype_id=ph.phenotype_id
       INNER JOIN {project} p ON p.project_id=pph.project_id
-      INNER JOIN {stock_phenotype} sp ON sp.phenotype_id=ph.phenotype_id
-      INNER JOIN {stock} s ON s.stock_id=sp.stock_id
-      INNER JOIN {cvterm} a ON a.cvterm_id=ph.attr_id
-      INNER JOIN {cvterm} m ON m.cvterm_id=ph.assay_id
-      LEFT OUTER JOIN {cvterm} v ON v.cvterm_id=cvalue_id
+      INNER JOIN {stock_phenotype} sph ON sph.phenotype_id=ph.phenotype_id
+      INNER JOIN {stock} s ON s.stock_id=sph.stock_id
+      INNER JOIN {cvterm} t ON t.cvterm_id=ph.attr_id
+      LEFT JOIN {cvterm} m ON m.cvterm_id=ph.assay_id
+      LEFT JOIN {cvterm_relationship} sr ON sr.object_id=m.cvterm_id
+        AND sr.type_id=(SELECT cvterm_id FROM {cvterm} WHERE name='scale_of')
+      LEFT JOIN {cvterm} sc ON sc.cvterm_id=sr.subject_id
+      LEFT JOIN {cvterm} c ON c.cvterm_id=ph.cvalue_id
     WHERE s.stock_id=" . $stock->stock_id . "
-    ORDER BY m.definition, a.definition";
+    ORDER BY t.name";
+//drupal_set_message(preg_replace("/[\{\}]/", '', $sql));
   $result = chado_query($sql);
   foreach ($result as $r) {
-    $traits[] = $r;
+    $traits[] = array(
+      'study'       => $r->study, 
+      'stock_id'    => $r->stock_id, 
+      'stock'       => $r->stock, 
+      'trait'       => $r->trait,
+      'method'      => $r->methodname,
+      'method_desc' => $r->method_desc,
+      'scale'       => $r->scalename, 
+      'value'       => $r->literal_value,
+      'cvalue'      => $r->code_value,
+      'cvalue_desc' => $r->code_description,
+    );
   }//each trait
   
   return $traits;
