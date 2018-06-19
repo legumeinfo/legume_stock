@@ -90,12 +90,13 @@ function loadMappingData($stock) {
 function loadTraitData($stock) {
   $traits = array();
   $sql = "
-    SELECT p.name AS study, s.stock_id, s.name AS stock, t.name AS trait,
+    SELECT p.name AS study, p.description AS study_description,
+           s.stock_id, s.name AS stock, t.name AS trait,
            m.name AS methodname, m.definition AS method_desc,
            sc.name AS scalename, ph.value AS literal_value, 
            SPLIT_PART(c.name, '|', 1) AS code_value, 
            c.definition AS code_description
-    FROM {phenotype ph 
+    FROM {phenotype} ph 
       INNER JOIN {project_phenotype} pph ON pph.phenotype_id=ph.phenotype_id
       INNER JOIN {project} p ON p.project_id=pph.project_id
       INNER JOIN {stock_phenotype} sph ON sph.phenotype_id=ph.phenotype_id
@@ -112,16 +113,17 @@ function loadTraitData($stock) {
   $result = chado_query($sql);
   foreach ($result as $r) {
     $traits[] = array(
-      'study'       => $r->study, 
-      'stock_id'    => $r->stock_id, 
-      'stock'       => $r->stock, 
-      'trait'       => $r->trait,
-      'method'      => $r->methodname,
-      'method_desc' => $r->method_desc,
-      'scale'       => $r->scalename, 
-      'value'       => $r->literal_value,
-      'cvalue'      => $r->code_value,
-      'cvalue_desc' => $r->code_description,
+      'study'             => $r->study, 
+      'study_description' => $r->study_description, 
+      'stock_id'          => $r->stock_id, 
+      'stock'             => $r->stock, 
+      'trait'             => $r->trait,
+      'method'            => $r->methodname,
+      'method_desc'       => $r->method_desc,
+      'scale'             => $r->scalename, 
+      'value'             => $r->literal_value,
+      'cvalue'            => $r->code_value,
+      'cvalue_desc'       => $r->code_description,
     );
   }//each trait
   

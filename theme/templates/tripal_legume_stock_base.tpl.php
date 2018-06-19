@@ -291,15 +291,21 @@ $rows[] = array(
 
 // Organize traits by study
 $study_data = array();
+$study_descriptions = array();
 foreach ($trait_rows as $t) {
-  $study      = $t['study'];
+  $study = $t['study'];
+  if (!isset($study_descriptions[$study])) {
+    $study_descriptions[$study] = $t['study_description'];
+  }
+  
   $method     = ($t['method_desc']) 
-                ? ' - ' . $t['method_desc'] 
-                : '';
+                 ? ' - ' . $t['method_desc'] 
+                 : '';
   $descriptor = $t['trait'] . $method;
   $value      = ($t['cvalue']) 
-                ? $t['cvalue'] . ' (' . $t['cvalue_desc'] . ')'
-                : $t['value'];
+                 ? $t['cvalue'] . ' (' . $t['cvalue_desc'] . ')'
+                 : $t['value'];
+                       
 //drupal_set_message("Got value '$value' for '$trait'");
   if (!isset($study_data[$study])) {
     $study_data[$study] = array();
@@ -346,8 +352,10 @@ foreach (array_keys($study_data) as $study) {
     'empty' => '',
   );
   
+  $study_html = "<span class='tooltip'>$study<span class='tooltiptext'>"
+              . $study_descriptions[$study] . "</span></span>";
   $rows[] = array(
-    array('data' => $study,
+    array('data' => $study_html,
           'header' => TRUE,
     ),
     theme_table($trait_table),
