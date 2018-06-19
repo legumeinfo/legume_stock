@@ -107,7 +107,7 @@ function loadTraitData($stock) {
       LEFT JOIN {cvterm} sc ON sc.cvterm_id=sr.subject_id
       LEFT JOIN {cvterm} c ON c.cvterm_id=ph.cvalue_id
     WHERE s.stock_id=" . $stock->stock_id . "
-    ORDER BY t.name";
+    ORDER BY m.name, t.name";
 //drupal_set_message(preg_replace("/[\{\}]/", '', $sql));
   $result = chado_query($sql);
   foreach ($result as $r) {
