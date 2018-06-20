@@ -168,22 +168,6 @@ function legume_stock_defaultvalue_stock() {
   $handler->display->display_options['filters']['common_name']['max_length'] = '40';
   $handler->display->display_options['filters']['common_name']['select_optional'] = TRUE;
   
-  // Filter criterion: collections
-  $handler->display->display_options['filters']['collections']['id'] = 'collection';
-  $handler->display->display_options['filters']['collections']['table'] = 'stock_search';
-  $handler->display->display_options['filters']['collections']['field'] = 'collection';
-  $handler->display->display_options['filters']['collections']['value'] = 'All';
-  $handler->display->display_options['filters']['collections']['values_form_type'] = 'select';
-  $handler->display->display_options['filters']['collections']['group'] = 1;
-  $handler->display->display_options['filters']['collections']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['collections']['expose']['operator_id'] = 'collection_op';
-  $handler->display->display_options['filters']['collections']['expose']['label'] = 'Collection';
-  $handler->display->display_options['filters']['collections']['expose']['use_operator'] = false;
-  $handler->display->display_options['filters']['collections']['expose']['operator'] = 'collection_op';
-  $handler->display->display_options['filters']['collections']['expose']['identifier'] = 'collection';
-  $handler->display->display_options['filters']['collections']['max_length'] = '40';
-  $handler->display->display_options['filters']['collections']['select_optional'] = TRUE;
-
   // Display: stock_search
   $handler = $view->new_display('page', 'search/search', 'page');
   $handler->display->display_options['path'] = 'search/stock';

@@ -23,7 +23,9 @@ if (isset($stock->stockprop)) {
 
 // expand the text fields
 $stock = chado_expand_var($stock, 'field', 'stock.description');
-$stock = chado_expand_var($stock, 'field', 'stock.uniquename'); ?>
+$stock = chado_expand_var($stock, 'field', 'stock.uniquename'); 
+
+?>
 
 <div class="tripal_stock-data-block-desc tripal-data-block-desc"></div> <?php  
 
@@ -194,6 +196,28 @@ if ($grin_accession) {
   );
 }
 
+// Collection(s)
+$stock = chado_expand_var($stock, 'table', 'stockcollection_stock', $options);
+$collections = array();
+if (isset($stock->stockcollection_stock[0])) {
+  foreach ($stock->stockcollection_stock as $c) {
+   $collections[] = $c->stockcollection_id->name;
+  }
+  if (count($collections) > 1) {
+    $collections_label = 'Collections';
+  }
+  else {
+     $collections_label = 'Collection';
+  }
+  
+  $rows[] = array(
+    array(
+      'data' => $collections_label,
+      'header' => TRUE,
+    ),
+    implode(', ', $collections),
+  );
+}
 
 // Show image link, if any
 $stock = chado_expand_var($stock, 'table', 'stock_eimage');

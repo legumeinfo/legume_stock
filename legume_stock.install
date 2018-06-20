@@ -346,13 +346,14 @@ function legume_stock_create_MView() {
   $sql_query="
       SELECT cs.nid, s.stock_id, s.name AS stockname, t.name AS stocktype,
              o.organism_id, o.common_name, o.genus, o.species,
-             sc.name AS collection
+             ARRAY_AGG(sc.name) AS collection
       FROM stock s
         INNER JOIN public.chado_stock cs ON cs.stock_id=s.stock_id
         INNER JOIN organism o ON o.organism_id=s.organism_id
         INNER JOIN cvterm t ON t.cvterm_id=s.type_id
         LEFT JOIN stockcollection_stock ss ON ss.stock_id=s.stock_id
         LEFT JOIN stockcollection sc ON sc.stockcollection_id=ss.stockcollection_id
+      GROUP BY cs.nid, s.stock_id, s.name, t.name, o.organism_id, o.common_name, o.genus, o.species
       ORDER BY s.name";
         
   // MView definition
