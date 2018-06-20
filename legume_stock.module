@@ -137,14 +137,6 @@ function legume_stock_views_query_alter(&$view, &$query) {
   // Only want one of each stock found
   $query->set_distinct(true, true);
 
-/*
-  // Default: order by stock name
-  $query->orderby[0] = array(
-    'field' => 'stock_name',
-    'direction' => 'ASC',
-  );
-*/
-
 //drupal_set_message("QUERY AFTER MODIFICATION:\n<pre>".print_r($query, true)."</pre>");
 }//legume_stock_views_query_alter
 

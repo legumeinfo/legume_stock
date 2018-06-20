@@ -37,34 +37,6 @@ function legume_stock_node_view($node, $view_mode, $langcode) {
   }
 }
 
-/*
-function legume_stock_form_alter(&$form, $form_state, $form_id) {
-//drupal_set_message("form data:<pre>" . print_r($form, true) . "</pre><br><br>");
-//drupal_set_message("collection element:<pre>" . print_r($form['collection'], true) . "</pre><br><br>");
-  // replace collection options with a straight list of collections
-  $new_options = array();
-  $sql = "SELECT name FROM {stockcollection} ORDER BY name";
-  $result = chado_query($sql);
-  foreach ($result as $r) {
-    $new_options[] = $r->name;
-  }
-  
-  $form['collection']['#options'] = $new_options;
-//drupal_set_message("new options: " . print_r($new_options, true) . "<br><br>");  
-//drupal_set_message("form state:<pre>" . print_r($form_state, true) . "</pre>");
-}
-
-
-function legume_stock_views_pre_view(&$view, &$display_id, &$args) {
-//drupal_set_message("view data:<pre>" . print_r($view, true) . "<\pre><br><br><br>");
-//drupal_set_message("END view data<br><br>");
-//drupal_set_message("<br><br>Contents of display_handler:<pre>" . print_r($view->display_handler, true) . "<\pre><br>");
-//drupal_set_message("END display_handler<br><br>");
-//drupal_set_message("<br><br>Contents of default_display:<pre>" . print_r($view->display_handler->default_display, true) . "<\pre><br>");
-//drupal_set_message("END default_display<br><br>");
-}
-*/
-
 function loadMappingData($stock) {
   // Get parent1
   $sql = "
