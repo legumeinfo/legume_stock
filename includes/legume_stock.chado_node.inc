@@ -37,6 +37,7 @@ function legume_stock_node_view($node, $view_mode, $langcode) {
   }
 }
 
+
 function loadMappingData($stock) {
   // Get parent1
   $sql = "
@@ -103,7 +104,10 @@ function loadTraitData($stock) {
       INNER JOIN {cvterm} t ON t.cvterm_id=ph.attr_id
       LEFT JOIN {cvterm} m ON m.cvterm_id=ph.assay_id
       LEFT JOIN {cvterm_relationship} sr ON sr.object_id=m.cvterm_id
-        AND sr.type_id=(SELECT cvterm_id FROM {cvterm} WHERE name='scale_of')
+        AND sr.type_id=(SELECT cvterm_id FROM {cvterm} 
+                        WHERE name='scale_of'
+                              AND cv_id=(SELECT cv_id FROM cv 
+                                         WHERE name='LegumeInfo:traits'))
       LEFT JOIN {cvterm} sc ON sc.cvterm_id=sr.subject_id
       LEFT JOIN {cvterm} c ON c.cvterm_id=ph.cvalue_id
     WHERE s.stock_id=" . $stock->stock_id . "
