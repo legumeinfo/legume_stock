@@ -106,7 +106,7 @@ function loadTraitData($stock) {
       LEFT JOIN {cvterm_relationship} sr ON sr.object_id=m.cvterm_id
         AND sr.type_id=(SELECT cvterm_id FROM {cvterm} 
                         WHERE name='scale_of'
-                              AND cv_id=(SELECT cv_id FROM cv 
+                              AND cv_id=(SELECT cv_id FROM {cv} 
                                          WHERE name='LegumeInfo:traits'))
       LEFT JOIN {cvterm} sc ON sc.cvterm_id=sr.subject_id
       LEFT JOIN {cvterm} c ON c.cvterm_id=ph.cvalue_id
